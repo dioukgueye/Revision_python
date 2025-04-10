@@ -1,0 +1,30 @@
+- name: Déployer l'application Flask avec Docker
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Installer Docker s’il n’est pas là
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Pull l’image depuis Docker Hub
+      community.docker.docker_image:
+        name: dioukabdou/jenkins_push
+        source: pull
+
+    - name: Supprimer le conteneur existant s’il existe
+      community.docker.docker_container:
+        name: flask_app
+        state: absent
+        force_kill: true
+
+    - name: Lancer le conteneur avec Flask
+      community.docker.docker_container:
+        name: flask_app
+        image: dioukabdou/jenkins_push
+        state: started
+        restart_policy: always
+        ports:
+          - "5000:5000"
